@@ -50,6 +50,7 @@ class DownloadManager private constructor(builder: Builder) : Serializable {
     internal var apkDescription: String
     internal var apkSize: String
     internal var apkMD5: String
+    internal var apkSHA256: String
     internal var httpManager: BaseHttpDownloadManager?
     internal var notificationChannel: NotificationChannel?
     internal var onDownloadListeners: MutableList<OnDownloadListener>
@@ -78,6 +79,7 @@ class DownloadManager private constructor(builder: Builder) : Serializable {
         apkDescription = builder.apkDescription
         apkSize = builder.apkSize
         apkMD5 = builder.apkMD5
+        apkSHA256 = builder.apkSHA256
         httpManager = builder.httpManager
         notificationChannel = builder.notificationChannel
         onDownloadListeners = builder.onDownloadListeners
@@ -248,6 +250,11 @@ class DownloadManager private constructor(builder: Builder) : Serializable {
         internal var apkMD5 = ""
 
         /**
+         * Apk sha256 file verification verification repeated download
+         */
+        internal var apkSHA256 = ""
+
+        /**
          * Apk download manager
          */
         internal var httpManager: BaseHttpDownloadManager? = null
@@ -359,6 +366,11 @@ class DownloadManager private constructor(builder: Builder) : Serializable {
 
         fun apkMD5(apkMD5: String): Builder {
             this.apkMD5 = apkMD5
+            return this
+        }
+
+        fun apkSHA256(apkSHA256: String): Builder {
+            this.apkSHA256 = apkSHA256
             return this
         }
 

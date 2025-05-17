@@ -39,5 +39,23 @@ class FileUtil {
             }
             return ""
         }
+
+        fun sha256(file: File): String {
+            return try {
+                val buffer = ByteArray(1024)
+                var len: Int
+                val digest = MessageDigest.getInstance("SHA-256")
+                val inStream = FileInputStream(file)
+                while (inStream.read(buffer).also { len = it } != -1) {
+                    digest.update(buffer, 0, len)
+                }
+                inStream.close()
+                val bigInt = BigInteger(1, digest.digest())
+                bigInt.toString(16).padStart(64, '0').uppercase()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                ""
+            }
+        }
     }
 }

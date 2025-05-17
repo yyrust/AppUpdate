@@ -81,6 +81,20 @@ class DownloadService : Service(), OnDownloadListener {
         return false
     }
 
+    /**
+     * Check whether the Apk has been downloaded, don't download again
+     */
+    private fun checkApkSha256(): Boolean {
+        if (manager.apkSHA256.isBlank()) {
+            return false
+        }
+        val file = File(manager.downloadPath, manager.apkName)
+        if (file.exists()) {
+            return FileUtil.sha256(file).equals(manager.apkSHA256, ignoreCase = true)
+        }
+        return false
+    }
+
     @Synchronized
     private fun download() {
         if (manager.downloadState) {
