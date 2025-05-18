@@ -57,7 +57,11 @@ class DownloadService : Service(), OnDownloadListener {
             TAG,
             if (enable) "Notification switch status: opened" else "Notification switch status: closed"
         )
-        if (checkApkMd5()) {
+        if (checkApkSha256()) {
+            LogUtil.d(TAG, "Apk already exist and install it directly.")
+            //install apk
+            done(File(manager.downloadPath, manager.apkName))
+        } else if (checkApkMd5()) {
             LogUtil.d(TAG, "Apk already exist and install it directly.")
             //install apk
             done(File(manager.downloadPath, manager.apkName))
@@ -110,7 +114,14 @@ class DownloadService : Service(), OnDownloadListener {
                     when (it) {
                         is DownloadStatus.Start -> start()
                         is DownloadStatus.Downloading -> downloading(it.max, it.progress)
-                        is DownloadStatus.Done -> done(it.apk)
+                        is DownloadStatus.Done -> {
+                            if (!checkDownloadedApkSha256(it.apk)) {
+                                val ex = SecurityException("SHA256 check sum mismatch")
+                                manager.onDownloadListeners.forEach { error(ex) }
+                            } else {
+                                done(it.apk)
+                            }
+                        }
                         is DownloadStatus.Cancel -> this@DownloadService.cancel()
                         is DownloadStatus.Error -> error(it.e)
                     }
@@ -198,5 +209,18 @@ class DownloadService : Service(), OnDownloadListener {
     private fun releaseResources() {
         manager.release()
         stopSelf()
+    }
+
+    // NOTE: I don't plan to add checkDownloadedApkMD5 because MD5 is insecure.
+    private fun checkDownloadedApkSha256(apk: File): Boolean {
+        if (manager.apkSHA256.isBlank()) {
+            return true
+        }
+        if (apk.exists()) {
+            val sha256 = FileUtil.sha256(apk)
+            return sha256.equals(manager.apkSHA256, ignoreCase = true)
+        } else {
+            return false
+        }
     }
 }
